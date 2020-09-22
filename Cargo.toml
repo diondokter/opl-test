@@ -1,0 +1,17 @@
+[package]
+name = "opl-test"
+version = "0.1.0"
+authors = ["Dion Dokter <diondokter@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "0.6.3"
+cortex-m-rt = "0.6.13"
+stm32f4xx-hal = { version = "0.8.3", features = ["stm32f407"] }
+rtt-target = { version = "0.2.2", features = ["cortex-m"] }
+cortex-m-rtic = "0.5.5"
+
+[profile.release]
+debug = 1
