@@ -12,6 +12,10 @@ cortex-m-rt = "0.6.13"
 stm32f4xx-hal = { version = "0.8.3", features = ["stm32f407", "rt"] }
 rtt-target = { version = "0.2.2", features = ["cortex-m"] }
 cortex-m-rtic = "0.5.5"
+alloc-cortex-m = "0.4.0"
+
+opl-driver = { path = "../opl-driver" }
 
 [profile.release]
 debug = 1
+lto = true
