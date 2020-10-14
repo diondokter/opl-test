@@ -276,6 +276,34 @@ pub fn main_motiv(channel: usize) -> Action<Opl<Melody>, Opl2Error> {
     }
 }
 
+pub fn main_motiv_low(channel: usize) -> Action<Opl<Melody>, Opl2Error> {
+    const OCTAVE: u8 = 5;
+
+    #[rustfmt::skip]
+        let bass_sequence = Sequence::new(&[
+        ActionPoint::new(0, Action::PlayNote { channel, value: Note::Eb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::C(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::G(OCTAVE-1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Eb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::C(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::Fs(OCTAVE-1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Eb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::C(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::F(OCTAVE-1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Eb(OCTAVE-1), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::F(OCTAVE-1), duration: QUARTER }),
+    ]);
+
+    Action::Repetition {
+        sequence: bass_sequence,
+        repetition_duration: QUARTER * 20,
+        repetition_times: 1,
+    }
+}
+
 pub fn alt_motiv(channel: usize) -> Action<Opl<Melody>, Opl2Error> {
     const OCTAVE: u8 = 4;
 
@@ -300,6 +328,66 @@ pub fn alt_motiv(channel: usize) -> Action<Opl<Melody>, Opl2Error> {
     Action::Repetition {
         sequence: bass_sequence,
         repetition_duration: QUARTER * 20,
+        repetition_times: 1,
+    }
+}
+
+pub fn alt_motiv_no_delay(channel: usize) -> Action<Opl<Melody>, Opl2Error> {
+    const OCTAVE: u8 = 4;
+
+    #[rustfmt::skip]
+        let bass_sequence = Sequence::new(&[
+        ActionPoint::new(0, Action::PlayNote { channel, value: Note::Bb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::G(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::Fs(OCTAVE+1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Bb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::G(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::F(OCTAVE+1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Bb(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::G(OCTAVE), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::E(OCTAVE+1), duration: FULL }),
+
+        ActionPoint::new(FULL, Action::PlayNote { channel, value: Note::Eb(OCTAVE+1), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel, value: Note::D(OCTAVE+1), duration: EIGHTH }),
+    ]);
+
+    Action::Repetition {
+        sequence: bass_sequence,
+        repetition_duration: QUARTER * 20,
+        repetition_times: 1,
+    }
+}
+
+pub fn motiv_finisher(channels: [usize; 3], octaves: [u8; 3]) -> Action<Opl<Melody>, Opl2Error> {
+    #[rustfmt::skip]
+    let bass_sequence = Sequence::new(&[
+        ActionPoint::new(0, Action::PlayNote { channel: channels[1], value: Note::Eb(octaves[1]+1), duration: EIGHTH }),
+        ActionPoint::new(EIGHTH, Action::PlayNote { channel: channels[1], value: Note::D(octaves[1]+1), duration: EIGHTH }),
+
+        ActionPoint::new(EIGHTH * 2, Action::PlayNote { channel: channels[0], value: Note::G(octaves[0]), duration: QUARTER + EIGHTH }),
+        ActionPoint::new(0         , Action::PlayNote { channel: channels[1], value: Note::A(octaves[1]), duration: QUARTER + EIGHTH }),
+        ActionPoint::new(QUARTER + EIGHTH, Action::PlayNote { channel: channels[0], value: Note::Ab(octaves[0]), duration: QUARTER }),
+        ActionPoint::new(0         , Action::PlayNote { channel: channels[1], value: Note::Bb(octaves[1]), duration: QUARTER }),
+        ActionPoint::new(QUARTER   , Action::PlayNote { channel: channels[0], value: Note::Bb(octaves[0]), duration: QUARTER }),
+        ActionPoint::new(0         , Action::PlayNote { channel: channels[1], value: Note::C(octaves[1]+1), duration: QUARTER }),
+        ActionPoint::new(QUARTER   , Action::PlayNote { channel: channels[0], value: Note::G(octaves[0]), duration: QUARTER }),
+        ActionPoint::new(0         , Action::PlayNote { channel: channels[1], value: Note::A(octaves[1]), duration: QUARTER }),
+
+        ActionPoint::new(QUARTER * 3, Action::PlayNote { channel: channels[0], value: Note::Bb(octaves[0]), duration: EIGHTH }),
+        ActionPoint::new(0          , Action::PlayNote { channel: channels[1], value: Note::D(octaves[1]+1), duration: EIGHTH }),
+        ActionPoint::new(0          , Action::PlayNote { channel: channels[2], value: Note::F(octaves[2]+1), duration: EIGHTH }),
+
+        ActionPoint::new(EIGHTH     , Action::PlayNote { channel: channels[0], value: Note::Bb(octaves[0]), duration: QUARTER * 5 + EIGHTH }),
+        ActionPoint::new(0          , Action::PlayNote { channel: channels[1], value: Note::Eb(octaves[1]+1), duration: QUARTER * 5 + EIGHTH }),
+        ActionPoint::new(0          , Action::PlayNote { channel: channels[2], value: Note::G(octaves[2]+1), duration: QUARTER * 5 + EIGHTH }),
+
+    ]);
+
+    Action::Repetition {
+        sequence: bass_sequence,
+        repetition_duration: QUARTER * 15,
         repetition_times: 1,
     }
 }

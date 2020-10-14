@@ -8,9 +8,10 @@ extern crate alloc;
 use alloc_cortex_m::CortexMHeap;
 use core::alloc::Layout;
 use cortex_m_rt::{exception, ExceptionFrame};
+use opl_driver::ll::VibratoDepth;
 use opl_driver::{
-    hl::Opl2Error,
     hl::Melody,
+    hl::Opl2Error,
     ll::{Bit, ShiftInterface},
 };
 use rtt_target::{rprintln, rtt_init, set_print_channel};
@@ -22,11 +23,10 @@ use stm32f4xx_hal::{
     gpio::PushPull, gpio::AF5, hal::spi::MODE_0, spi, stm32::SPI1, timer::Timer,
 };
 use stm32f4xx_hal::{prelude::*, stm32::TIM4};
-use opl_driver::ll::VibratoDepth;
 
 mod helpers;
-mod sequencer;
 mod mission_impossible;
+mod sequencer;
 
 type Led2Pin = PA6<Output<OpenDrain>>;
 
@@ -110,7 +110,12 @@ const APP: () = {
         led_2.set_high().unwrap();
 
         let ticks_per_second = BPM * QUARTER / 60;
-        rprintln!("Music at {}({}) bpm and {} ticks per second", BPM, ticks_per_second * 60, ticks_per_second);
+        rprintln!(
+            "Music at {}({}) bpm and {} ticks per second",
+            BPM,
+            ticks_per_second * 60,
+            ticks_per_second
+        );
         let mut global_timer = Timer::tim4(dp.TIM4, ticks_per_second.hz(), clocks);
         global_timer.listen(stm32f4xx_hal::timer::Event::TimeOut);
 
@@ -146,23 +151,34 @@ const APP: () = {
             .write(|w| w.vibrato_depth(VibratoDepth::High))
             .unwrap();
 
+        const BASS: usize = 0;
+        const MELODY: usize = 1;
+        const CHORD0: usize = 2;
+        const CHORD1: usize = 3;
+        const CHORD2: usize = 4;
+
         #[rustfmt::skip]
         let music_sequence: Sequence<Opl<Melody>, Opl2Error> = Sequence::new(&[
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(0, mission_impossible::bass_instrument()) }),
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(2, mission_impossible::motiv_instrument()) }),
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(3, mission_impossible::chord_fill_instrument()) }),
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(4, mission_impossible::chord_fill_instrument()) }),
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(5, mission_impossible::chord_fill_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(BASS, mission_impossible::bass_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(MELODY, mission_impossible::motiv_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(CHORD0, mission_impossible::chord_fill_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(CHORD1, mission_impossible::chord_fill_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(CHORD2, mission_impossible::chord_fill_instrument()) }),
 
-            ActionPoint::new(QUARTER, mission_impossible::bass_loop(6, 0, 2)),
-            ActionPoint::new(0, mission_impossible::bass_loop(2, 3, 3)),
-            ActionPoint::new(QUARTER * 20, mission_impossible::main_motiv(2)),
-            ActionPoint::new(QUARTER * 20, mission_impossible::chord_fill([3,4,5])),
-            ActionPoint::new(QUARTER * 10, mission_impossible::alt_motiv(2)),
-            ActionPoint::new(QUARTER * 10, mission_impossible::bass_loop_to_alt_transition(0, 2)),
-            ActionPoint::new(QUARTER * 10, mission_impossible::bass_loop_alt(0, 2)),
-            ActionPoint::new(QUARTER * 20, mission_impossible::bass_loop(1, 0, 2)),
-            ActionPoint::new(QUARTER * 10, mission_impossible::bass_finisher(0, 2, 2, 3)),
+            ActionPoint::new(QUARTER     , mission_impossible::bass_loop(6, BASS, 2)),
+            ActionPoint::new(0           , mission_impossible::bass_loop(2, MELODY, 4)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::main_motiv(MELODY)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::chord_fill([CHORD0,CHORD1,CHORD2])),
+            ActionPoint::new(QUARTER * 10, mission_impossible::alt_motiv(MELODY)),
+            ActionPoint::new(QUARTER * 10, mission_impossible::bass_loop_to_alt_transition(BASS, 2)),
+            ActionPoint::new(QUARTER * 10, mission_impossible::main_motiv_low(MELODY)),
+            ActionPoint::new(0           , mission_impossible::main_motiv_low(CHORD0)),
+            ActionPoint::new(0           , mission_impossible::bass_loop_alt(BASS, 2)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::bass_loop(1, BASS, 2)),
+            ActionPoint::new(0           , mission_impossible::alt_motiv_no_delay(MELODY)),
+            ActionPoint::new(QUARTER * 10, Action::Custom { function: |opl| opl.setup_melody_instrument(CHORD0, mission_impossible::motiv_instrument()) }),
+            ActionPoint::new(0           , mission_impossible::bass_finisher(BASS, CHORD0, 2, 3)),
+            ActionPoint::new(QUARTER * 5 , mission_impossible::motiv_finisher([MELODY, CHORD1, CHORD2], [4, 3, 3])),
         ]);
 
         init::LateResources {
