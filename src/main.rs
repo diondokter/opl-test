@@ -9,9 +9,8 @@ use alloc_cortex_m::CortexMHeap;
 use core::alloc::Layout;
 use cortex_m_rt::{exception, ExceptionFrame};
 use opl_driver::{
-    hl::Note,
     hl::Opl2Error,
-    hl::Rhythm,
+    hl::Melody,
     ll::{Bit, ShiftInterface},
 };
 use rtt_target::{rprintln, rtt_init, set_print_channel};
@@ -23,9 +22,11 @@ use stm32f4xx_hal::{
     gpio::PushPull, gpio::AF5, hal::spi::MODE_0, spi, stm32::SPI1, timer::Timer,
 };
 use stm32f4xx_hal::{prelude::*, stm32::TIM4};
+use opl_driver::ll::VibratoDepth;
 
 mod helpers;
 mod sequencer;
+mod mission_impossible;
 
 type Led2Pin = PA6<Output<OpenDrain>>;
 
@@ -43,21 +44,21 @@ type Opl<S> = opl_driver::hl::Opl2<
 #[global_allocator]
 static ALLOCATOR: CortexMHeap = CortexMHeap::empty();
 
-const FULL: u32 = 128;
-const HALF: u32 = 64;
-const QUARTER: u32 = 32;
-const EIGHTH: u32 = 16;
-const SIXTEENTH: u32 = 8;
+pub const FULL: u32 = 128;
+pub const HALF: u32 = 64;
+pub const QUARTER: u32 = 32;
+pub const EIGHTH: u32 = 16;
+pub const SIXTEENTH: u32 = 8;
 
-const BPM: u32 = 120;
+const BPM: u32 = 178;
 
 #[rtic::app(device = stm32f4xx_hal::stm32, peripherals = true, monotonic = rtic::cyccnt::CYCCNT)]
 const APP: () = {
     struct Resources {
         global_timer: Timer<TIM4>,
         led_2: Led2Pin,
-        opl: Opl<Rhythm>,
-        music_sequence: Sequence<Opl<Rhythm>, Opl2Error>,
+        opl: Opl<Melody>,
+        music_sequence: Sequence<Opl<Melody>, Opl2Error>,
     }
 
     #[init()]
@@ -134,90 +135,35 @@ const APP: () = {
             opl_spi, opl_a0, opl_latch, opl_reset, opl_delay,
         ));
 
-        let mut opl = opl.initialize().unwrap().into_rhythm_mode().unwrap();
+        let mut opl = opl.initialize().unwrap();
 
         opl.ll()
             .waveform_select_enable()
             .write(|w| w.waveform_select_enable(Bit::Set))
             .unwrap();
+        opl.ll()
+            .rhythm_settings()
+            .write(|w| w.vibrato_depth(VibratoDepth::High))
+            .unwrap();
 
         #[rustfmt::skip]
-        let mut music_sequence: Sequence<Opl<Rhythm>, Opl2Error> = Sequence::new(&[
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(0, opl_driver::instrument::presets::STRINGS1) }),
+        let music_sequence: Sequence<Opl<Melody>, Opl2Error> = Sequence::new(&[
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(0, mission_impossible::bass_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(2, mission_impossible::motiv_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(3, mission_impossible::chord_fill_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(4, mission_impossible::chord_fill_instrument()) }),
+            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(5, mission_impossible::chord_fill_instrument()) }),
 
-            ActionPoint::new(0, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::D(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::D(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::F(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::G(4), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::F(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::G(4), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 0, value: Note::G(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::A(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::G(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::F(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::G(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::A(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::G(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::F(4), duration: EIGHTH }),
-            ActionPoint::new(EIGHTH, Action::PlayNote { channel: 0, value: Note::E(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::G(3), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 0, value: Note::C(4), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::G(3), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 0, value: Note::C(4), duration: HALF }),
+            ActionPoint::new(QUARTER, mission_impossible::bass_loop(6, 0, 2)),
+            ActionPoint::new(0, mission_impossible::bass_loop(2, 3, 3)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::main_motiv(2)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::chord_fill([3,4,5])),
+            ActionPoint::new(QUARTER * 10, mission_impossible::alt_motiv(2)),
+            ActionPoint::new(QUARTER * 10, mission_impossible::bass_loop_to_alt_transition(0, 2)),
+            ActionPoint::new(QUARTER * 10, mission_impossible::bass_loop_alt(0, 2)),
+            ActionPoint::new(QUARTER * 20, mission_impossible::bass_loop(1, 0, 2)),
+            ActionPoint::new(QUARTER * 10, mission_impossible::bass_finisher(0, 2, 2, 3)),
         ]);
-
-        #[rustfmt::skip]
-        let bass_sequence: Sequence<Opl<Rhythm>, Opl2Error> = Sequence::new(&[
-            ActionPoint::new(0, Action::Custom { function: |opl| opl.setup_melody_instrument(1, opl_driver::instrument::presets::GUITAR1) }),
-
-            ActionPoint::new(FULL * 2, Action::PlayNote { channel: 1, value: Note::C(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::D(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::C(2), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::C(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::D(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::C(2), duration: QUARTER }),
-
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::F(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::G(2), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::F(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::G(2), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::D(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::C(2), duration: HALF }),
-
-            ActionPoint::new(HALF, Action::PlayNote { channel: 1, value: Note::E(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::D(2), duration: QUARTER }),
-            ActionPoint::new(QUARTER, Action::PlayNote { channel: 1, value: Note::C(2), duration: QUARTER }),
-        ]);
-
-        music_sequence.merge(bass_sequence);
 
         init::LateResources {
             global_timer,
@@ -240,8 +186,8 @@ const APP: () = {
 
         let global_timer: &mut Timer<TIM4> = cx.resources.global_timer;
         let led_2: &mut Led2Pin = cx.resources.led_2;
-        let opl: &mut Opl<Rhythm> = cx.resources.opl;
-        let music_sequence: &mut Sequence<Opl<Rhythm>, Opl2Error> = cx.resources.music_sequence;
+        let opl: &mut Opl<Melody> = cx.resources.opl;
+        let music_sequence: &mut Sequence<Opl<Melody>, Opl2Error> = cx.resources.music_sequence;
 
         global_timer.clear_interrupt(stm32f4xx_hal::timer::Event::TimeOut);
         led_2.toggle().unwrap();

@@ -5,11 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7ae68f2d-3d83-4dac-aa44-4da740f1a3fa" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.vscode/tasks.json" beforeDir="false" afterPath="$PROJECT_DIR$/.vscode/tasks.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/size.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/size.ps1" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sequencer.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/sequencer.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +48,7 @@
   <component name="RustProjectSettings">
     <option name="compileAllTargets" value="false" />
     <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+    <option name="version" value="2" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="WindowStateProjectService">
@@ -57,22 +56,22 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="736" y="355" key="#com.intellij.execution.impl.EditConfigurationsDialog/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1600978016541" />
-    <state width="2517" height="394" key="GridCell.Tab.0.bottom" timestamp="1600981750476">
+    <state width="2517" height="394" key="GridCell.Tab.0.bottom" timestamp="1601140895226">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state width="2517" height="394" key="GridCell.Tab.0.bottom/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1600981750476" />
-    <state width="2517" height="394" key="GridCell.Tab.0.center" timestamp="1600981750476">
+    <state width="2517" height="394" key="GridCell.Tab.0.bottom/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1601140895226" />
+    <state width="2517" height="394" key="GridCell.Tab.0.center" timestamp="1601140895225">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state width="2517" height="394" key="GridCell.Tab.0.center/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1600981750476" />
-    <state width="2517" height="394" key="GridCell.Tab.0.left" timestamp="1600981750476">
+    <state width="2517" height="394" key="GridCell.Tab.0.center/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1601140895225" />
+    <state width="2517" height="394" key="GridCell.Tab.0.left" timestamp="1601140895225">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state width="2517" height="394" key="GridCell.Tab.0.left/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1600981750476" />
-    <state width="2517" height="394" key="GridCell.Tab.0.right" timestamp="1600981750476">
+    <state width="2517" height="394" key="GridCell.Tab.0.left/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1601140895225" />
+    <state width="2517" height="394" key="GridCell.Tab.0.right" timestamp="1601140895226">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state width="2517" height="394" key="GridCell.Tab.0.right/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1600981750476" />
+    <state width="2517" height="394" key="GridCell.Tab.0.right/-3840.0.2560.1400/0.0.2560.1400@0.0.2560.1400" timestamp="1601140895226" />
     <state x="782" y="345" key="SettingsEditor" timestamp="1600977993867">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>

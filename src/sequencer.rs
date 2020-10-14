@@ -73,7 +73,7 @@ impl<I: HardwareInterface, S: Initialized> Sequence<Opl2<I, S>, Opl2Error> {
             Action::Repetition {
                 sequence,
                 repetition_duration,
-                repetition_count,
+                repetition_times: repetition_count,
             } => {
                 let mut points = sequence.points.clone();
 
@@ -82,17 +82,18 @@ impl<I: HardwareInterface, S: Initialized> Sequence<Opl2<I, S>, Opl2Error> {
                     self.insert(repetition_point);
                 }
 
-                if repetition_count > 0 {
+                if repetition_count > 1 {
                     self.insert(AbsoluteActionPoint {
                         timestamp: point.timestamp + repetition_duration,
                         value: Action::Repetition {
                             sequence,
                             repetition_duration,
-                            repetition_count: repetition_count - 1,
+                            repetition_times: repetition_count - 1,
                         },
                     });
                 }
             }
+            Action::Marker => {}
         }
 
         Ok(())
@@ -107,7 +108,7 @@ impl<I: HardwareInterface, S: Initialized> Sequence<Opl2<I, S>, Opl2Error> {
         let mut index = None;
 
         for (i, p) in self.points.iter().enumerate() {
-            if p.timestamp >= point.timestamp {
+            if p.timestamp > point.timestamp {
                 index = Some(i);
                 break;
             }
@@ -167,8 +168,9 @@ pub enum Action<O, E> {
     Repetition {
         sequence: Sequence<O, E>,
         repetition_duration: u32,
-        repetition_count: u32,
+        repetition_times: u32,
     },
+    Marker,
 }
 
 impl<O, E> Display for Action<O, E> {
@@ -179,6 +181,7 @@ impl<O, E> Display for Action<O, E> {
             Action::NoteOff { .. } => write!(f, "Action NoteOff"),
             Action::PlayNote { .. } => write!(f, "Action PlayNote"),
             Action::Repetition { .. } => write!(f, "Action Repetition"),
+            Action::Marker { .. } => write!(f, "Action Marker"),
         }
     }
 }
@@ -225,12 +228,13 @@ impl<O, E> Clone for Action<O, E> {
             Action::Repetition {
                 sequence,
                 repetition_duration,
-                repetition_count,
+                repetition_times: repetition_count,
             } => Action::Repetition {
                 sequence: sequence.clone(),
                 repetition_duration: repetition_duration.clone(),
-                repetition_count: repetition_count.clone(),
+                repetition_times: repetition_count.clone(),
             },
+            Action::Marker => Action::Marker,
         }
     }
 }
